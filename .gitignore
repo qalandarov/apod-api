@@ -3,10 +3,12 @@
 .pydevproject
 .coverage
 env/ 
+venv/
 alchemy_api.key
 # don't include third-party dependencies.
 lib/
 !lib/README.md
 .DS_Store
 .idea/
+.vscode/
 apod/__pycache__/
