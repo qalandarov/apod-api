@@ -12,6 +12,10 @@ Dec 1, 2015 (written by Dan Hammer)
 import sys
 sys.path.insert(0, "../lib")
 
+import os
+import json
+from multiprocessing.dummy import Pool
+
 from datetime import datetime, date
 from random import sample
 from flask import request, jsonify, render_template, Flask
@@ -31,6 +35,9 @@ SERVICE_VERSION = 'v1'
 APOD_METHOD_NAME = 'apod'
 ALLOWED_APOD_FIELDS = ['concept_tags', 'date', 'hd', 'count', 'start_date', 'end_date', 'thumbs']
 ALCHEMY_API_KEY = None
+
+FOLDER_NAME = "data"
+MISSING_DATES = []
 
 try:
     with open('alchemy_api.key', 'r') as f:
@@ -191,18 +198,42 @@ def _get_json_for_date_range(start_date, end_date, use_concept_tags, thumbs):
     while start_ordinal <= end_ordinal:
         # get data
         dt = date.fromordinal(start_ordinal)
-        data = _apod_handler(dt, use_concept_tags, start_ordinal == today_ordinal, thumbs)
-        data['service_version'] = SERVICE_VERSION
-
-        if data['date'] == dt.isoformat():
-            # Handles edge case where server is a day ahead of NASA APOD service
-            all_data.append(data)
-
+        touple = (dt, use_concept_tags, start_ordinal == today_ordinal, thumbs)
+        all_data.append(touple)
         start_ordinal += 1
 
-    # return info as JSON
-    return jsonify(all_data)
 
+    pool = Pool(min(100, len(all_data)))  # max 100 threads
+    pool.map(threaded_download, all_data)
+    pool.close()
+    pool.join()
+
+    # return info as JSON
+    print(f"MISSING_DATES: {MISSING_DATES}")
+    return {"processed": {"from": start_date, "to": end_date}}
+
+
+def threaded_download(touple):
+    # touple = (dt, use_concept_tags, start_ordinal == today_ordinal, thumbs)
+    # _apod_handler(dt, use_concept_tags=False, use_default_today_date=False, thumbs=False)
+    requested_date = touple[0]
+    
+    if os.path.exists(f"{FOLDER_NAME}/{requested_date}.json"):
+        return
+    
+    try:
+        data = _apod_handler(requested_date, touple[1], touple[2], touple[3])
+        dump(data, requested_date)
+    except:
+        MISSING_DATES.append(requested_date)
+        pass
+
+
+def dump(data, date):
+    if not os.path.exists(FOLDER_NAME):
+        os.makedirs(FOLDER_NAME)
+    with open(f"{FOLDER_NAME}/{date}.json", "w") as file:
+        json.dump(data, file, indent=2)
 
 #
 # Endpoints
