@@ -277,5 +277,10 @@ def application_error(e):
     return _abort(500, 'Sorry, unexpected error: {}'.format(e), usage=False)
 
 
+@app.route("/favicon.ico")
+def favicon():
+    return _abort(404, "favicon doesn't exist")
+
+
 if __name__ == '__main__':
     app.run()
