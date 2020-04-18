@@ -6,7 +6,7 @@ Created on Mar 24, 2017
 @author=bathomas @email=brian.a.thomas@nasa.gov
 """
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 from datetime import timedelta
 import requests
 import logging
@@ -78,13 +78,19 @@ def _get_apod_chars(dt, thumbs):
 
     props['explanation'] = _explanation(soup)
     props['title'] = _title(soup)
+    props['media_type'] = media_type
+    props['date'] = dt.isoformat()
+    
     copyright_text = _copyright(soup)
     if copyright_text:
         props['copyright'] = copyright_text
-    props['media_type'] = media_type
+
+    keywords = _keywords(soup)
+    if keywords:
+        props['keywords'] = keywords
+    
     if data:
         props['url'] = data
-    props['date'] = dt.isoformat()
 
     if hd_data and hd_data != data:
         props['hdurl'] = hd_data
@@ -179,6 +185,37 @@ def _copyright(soup):
     except Exception as ex:
         LOG.error(str(ex))
         raise ValueError('Unsupported schema for given date.')
+
+
+def _keywords(soup):
+    """
+    Accepts a BeautifulSoup object for the APOD HTML page and returns the
+    content of the `keywords` meta.
+    """
+    LOG.debug('getting the keywords')
+    raw_keywords = None
+
+    try:
+        # Handle later APOD entries
+        meta = soup.find("meta", attrs={"name": "keywords"})
+        raw_keywords = meta["content"]
+    except Exception:
+        # Handler for early APOD entries
+        comments = soup.findAll(text=lambda text:isinstance(text, Comment))
+        for comment in comments:
+            comment = comment.lower()
+            if "keywords:" not in comment: continue
+            raw_keywords = comment.split("keywords:")[1]
+            break
+
+    try:
+        # e.g.: "abc, bcd, ng1 sd..."
+        content = raw_keywords.split(",")
+        # remove leading/trailing spaces and convert everything to lowercase
+        keywords = [word.strip().lower() for word in content]
+        return keywords
+    except:
+        return None
 
 
 def _explanation(soup):
