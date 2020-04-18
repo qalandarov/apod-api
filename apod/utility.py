@@ -58,7 +58,6 @@ def _get_apod_chars(dt, thumbs):
     if soup.img:
         # it is an image, so get both the low- and high-resolution data
         data = BASE + soup.img['src']
-        hd_data = data
 
         LOG.debug('getting the link for hd_data')
         for link in soup.find_all('a', href=True):
