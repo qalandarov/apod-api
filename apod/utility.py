@@ -86,7 +86,7 @@ def _get_apod_chars(dt, thumbs):
         props['url'] = data
     props['date'] = dt.isoformat()
 
-    if hd_data:
+    if hd_data and hd_data != data:
         props['hdurl'] = hd_data
 
     if thumbs and media_type == "video":
