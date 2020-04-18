@@ -90,7 +90,7 @@ def _apod_handler(dt, use_concept_tags=False, use_default_today_date=False, thum
             if ALCHEMY_API_KEY is None:
                 page_props['concepts'] = 'concept_tags functionality turned off in current service'
             else:
-                page_props['concepts'] = get_concepts(request, page_props['explanation'], ALCHEMY_API_KEY)
+                page_props['concepts'] = get_concepts(page_props['explanation'], ALCHEMY_API_KEY)
 
         return page_props
 

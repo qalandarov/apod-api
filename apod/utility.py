@@ -247,23 +247,19 @@ def parse_apod(dt, use_default_today_date=False, thumbs=False):
             raise Exception(ex)
 
 
-def get_concepts(request, text, apikey):
+def get_concepts(text, apikey):
     """
     Returns the concepts associated with the text, interleaved with integer
     keys indicating the index.
     """
-    cbase = 'http://access.alchemyapi.com/calls/text/TextGetRankedConcepts'
+    cbase = 'https://api.eu-gb.natural-language-understanding.watson.cloud.ibm.com/instances/89764c40-91bb-4bcb-aa9d-98f0053b050a/v1/analyze?version=2019-07-12'
 
-    params = dict(
-        outputMode='json',
-        apikey=apikey,
-        text=text
-    )
+    params = {"text": text, "features": { "concepts": {} } }
 
     try:
 
         LOG.debug('Getting response')
-        response = json.loads(request.get(cbase, fields=params))
+        response = requests.post(cbase, auth=("apikey", apikey), json=params).json()
         clist = [concept['text'] for concept in response['concepts']]
         return {k: v for k, v in zip(range(len(clist)), clist)}
 
