@@ -212,6 +212,7 @@ def _keywords(soup):
         content = raw_keywords.split(",")
         # remove leading/trailing spaces and convert everything to lowercase
         keywords = [word.strip().lower() for word in content]
+        keywords = [word for word in keywords if word]  # remove empty strings
         return keywords
     except:
         return None
