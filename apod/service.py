@@ -136,34 +136,6 @@ def _get_json_for_date(input_date, use_concept_tags, thumbs):
     return jsonify(data)
 
 
-def _get_json_for_random_dates(count, use_concept_tags, thumbs):
-    """
-    This returns the JSON data for a set of randomly chosen dates. The number of dates is specified by the count
-    parameter
-    :param count:
-    :param use_concept_tags:
-    :return:
-    """
-
-    if count > 100 or count <= 0:
-        raise ValueError('Count must be positive and cannot exceed 100')
-
-    begin_ordinal = datetime(1995, 6, 16).toordinal()
-    today_ordinal = datetime.today().toordinal()
-
-    date_range = range(begin_ordinal, today_ordinal + 1)
-    random_date_ordinals = sample(date_range, count)
-
-    all_data = []
-    for date_ordinal in random_date_ordinals:
-        dt = date.fromordinal(date_ordinal)
-        data = _apod_handler(dt, use_concept_tags, date_ordinal == today_ordinal, thumbs)
-        data['service_version'] = SERVICE_VERSION
-        all_data.append(data)
-
-    return jsonify(all_data)
-
-
 def _get_json_for_date_range(start_date, end_date, use_concept_tags, thumbs):
     """
     This returns the JSON data for a range of dates, specified by start_date and end_date, which must be strings of the
