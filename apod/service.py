@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.DEBUG)
 # assorted libraries
 SERVICE_VERSION = 'v1'
 APOD_METHOD_NAME = 'apod'
-ALLOWED_APOD_FIELDS = ['date', 'hd', 'start_date', 'end_date']
+ALLOWED_APOD_FIELDS = ['date', 'start_date', 'end_date']
 
 CACHE_FOLDER = "cache"
 MISSING_DATES = []

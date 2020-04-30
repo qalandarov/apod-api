@@ -97,7 +97,6 @@ as parameters to a http GET request. A JSON dictionary is returned nominally.
 **Fields**
 
 - `date` A string in YYYY-MM-DD format indicating the date of the APOD image (example: 2014-11-03).  Defaults to today's date.  Must be after 1995-06-16, the first day an APOD picture was posted.  There are no images for tomorrow available through this API.
-- `hd` A boolean parameter indicating whether or not high-resolution images should be returned. This is present for legacy purposes, it is always ignored by the service and high-resolution urls are returned regardless.
 - `start_date` A string in YYYY-MM-DD format indicating the start of a date range. All images in the range from `start_date` to `end_date` will be returned in a JSON array. Cannot be used with `date`.
 - `end_date` A string in YYYY-MM-DD format indicating that end of a date range. If `start_date` is specified without an `end_date` then `end_date` defaults to the current date.
 
@@ -107,7 +106,7 @@ as parameters to a http GET request. A JSON dictionary is returned nominally.
 - `title` The title of the image.
 - `date` Date of image. Included in response because of default values.
 - `url` The URL of the APOD image or video of the day.
-- `hdurl` The URL for any high-resolution image for that day. Returned regardless of 'hd' param setting but will be omitted in the response IF it does not exist originally at APOD.
+- `hdurl` The URL for any high-resolution image for that day (if available).
 - `media_type` The type of media (data) returned. May either be 'image' or 'video' depending on content.
 - `explanation` The supplied text explanation of the image.
 - `thumbnail_url` The URL of thumbnail of the video. 
