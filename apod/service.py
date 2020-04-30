@@ -17,7 +17,6 @@ import json
 from multiprocessing.dummy import Pool
 
 from datetime import datetime, date
-from random import sample
 from flask import request, jsonify, render_template, Flask
 from flask_cors import CORS
 from utility import parse_apod
