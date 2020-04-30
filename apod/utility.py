@@ -10,6 +10,8 @@ from bs4 import BeautifulSoup, Comment
 from datetime import timedelta
 import requests
 import logging
+import json
+import os
 import re
 
 LOG = logging.getLogger(__name__)
@@ -17,6 +19,40 @@ logging.basicConfig(level=logging.WARN)
 
 # location of backing APOD service
 BASE = 'https://apod.nasa.gov/apod/'
+
+
+CACHE_FOLDER_HTML = "cache/html"
+CACHE_FOLDER_JSON = "cache/json"
+
+# JSON Caching
+
+def cache_json(data, date):
+    with open(f"{CACHE_FOLDER_JSON}/{date}.json", "w") as file:
+        json.dump(data, file)
+
+def cached_json_for(date):
+    with open(f"{CACHE_FOLDER_JSON}/{date}.json") as file:
+        data = json.load(file)
+    return data
+
+def cached_json_exists_for(date):
+    return os.path.exists(f"{CACHE_FOLDER_JSON}/{date}.json")
+
+
+# HTML Caching (internal use only)
+
+def _cached_html_for(date):
+    with open(f"{CACHE_FOLDER_HTML}/{_html_filename_for(date)}") as file:
+        content = file.read()
+    return content
+
+def _cache_html(content, date):
+    with open(f"{CACHE_FOLDER_HTML}/{_html_filename_for(date)}", "w") as file:
+        file.write(content)
+
+def _html_filename_for(date):
+    date_str = date.strftime('%y%m%d')
+    return f"ap{date_str}.html"
 
 
 # function for getting video thumbnails
@@ -43,10 +79,16 @@ def _get_thumbs(data):
 
 def _get_apod_chars(dt):
     media_type = 'image'
-    date_str = dt.strftime('%y%m%d')
-    apod_url = '%sap%s.html' % (BASE, date_str)
-    LOG.debug('OPENING URL:' + apod_url)
-    soup = BeautifulSoup(requests.get(apod_url).text, 'html.parser')
+
+    try:
+        html_content = _cached_html_for(dt)
+    except:
+        apod_url = os.path.join(BASE, _html_filename_for(dt))
+        LOG.debug('OPENING URL:' + apod_url)
+        html_content = requests.get(apod_url).text
+        _cache_html(html_content, dt)
+
+    soup = BeautifulSoup(html_content, 'html.parser')
     LOG.debug('getting the data url')
     hd_data = None
     if soup.img:

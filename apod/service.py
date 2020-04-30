@@ -12,15 +12,13 @@ Dec 1, 2015 (written by Dan Hammer)
 import sys
 sys.path.insert(0, "../lib")
 
-import os
-import json
 from multiprocessing.dummy import Pool
 
 from datetime import datetime, date
 from flask import request, jsonify, render_template, Flask
 from flask_cors import CORS
 from flask_gzip import Gzip
-from utility import parse_apod
+from utility import parse_apod, cache_json, cached_json_for, cached_json_exists_for
 import logging
 
 app = Flask(__name__)
@@ -115,14 +113,14 @@ def _get_json_for_date(input_date):
 
     # get data
     try:
-        data = cached_data_for(dt)
+        data = cached_json_for(dt)
     except:
         data = _apod_handler(dt, use_default_today_date)
+        cache_json(data, dt)
 
     data['service_version'] = SERVICE_VERSION
 
-    # return info as JSON
-    return jsonify(data)
+    return data
 
 
 def _get_json_for_date_range(start_date, end_date):
@@ -185,29 +183,16 @@ def threaded_download(touple):
     # _apod_handler(dt, use_default_today_date=False)
     requested_date = touple[0]
     
-    if os.path.exists(f"{CACHE_FOLDER}/{requested_date}.json"):
+    if cached_json_exists_for(requested_date):
         return
     
     try:
         data = _apod_handler(requested_date, touple[1])
-        dump(data, requested_date)
+        cache_json(data, requested_date)
     except:
         date_str = datetime.strftime(requested_date, '%Y-%m-%d')
         MISSING_DATES.append(date_str)
         pass
-
-
-def dump(data, date):
-    if not os.path.exists(CACHE_FOLDER):
-        os.makedirs(CACHE_FOLDER)
-    with open(f"{CACHE_FOLDER}/{date}.json", "w") as file:
-        json.dump(data, file, indent=2)
-
-
-def cached_data_for(date):
-    with open(f"{CACHE_FOLDER}/{date}.json") as file:
-        data = json.load(file)
-    return data
 
 #
 # Endpoints
