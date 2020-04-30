@@ -165,8 +165,10 @@ def _get_json_for_date_range(start_date, end_date):
     pool.join()
 
     # return info as JSON
-    print(f"MISSING_DATES: {MISSING_DATES}")
-    return {"processed": {"from": start_date, "to": end_date}}
+    return {
+        "processed": {"from": start_date, "to": end_date},
+        "missing_dates": MISSING_DATES
+    }
 
 
 def threaded_download(touple):
@@ -181,7 +183,8 @@ def threaded_download(touple):
         data = _apod_handler(requested_date, touple[1])
         dump(data, requested_date)
     except:
-        MISSING_DATES.append(requested_date)
+        date_str = datetime.strftime(requested_date, '%Y-%m-%d')
+        MISSING_DATES.append(date_str)
         pass
 
 
