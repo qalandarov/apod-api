@@ -24,7 +24,8 @@ BASE = 'https://apod.nasa.gov/apod/'
 
 # function for getting video thumbnails
 def _get_thumbs(data):
-    global video_thumb
+    video_thumb = ""
+
     if "youtube" in data or "youtu.be" in data:
         # get ID from YouTube URL
         youtube_id_regex = re.compile("(?:(?<=(v|V)/)|(?<=be/)|(?<=(\?|\&)v=)|(?<=embed/))([\w-]+)")
@@ -40,9 +41,6 @@ def _get_thumbs(data):
         with urllib.request.urlopen("https://vimeo.com/api/v2/video/" + vimeo_id + ".json") as url:
             data = json.loads(url.read().decode())
             video_thumb = data[0]['thumbnail_large']
-    else:
-        # the thumbs parameter is True, but the APOD for the date is not a video, output nothing
-        video_thumb = ""
 
     return video_thumb
 
