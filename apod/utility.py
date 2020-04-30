@@ -24,6 +24,12 @@ BASE = 'https://apod.nasa.gov/apod/'
 CACHE_FOLDER_HTML = "cache/html"
 CACHE_FOLDER_JSON = "cache/json"
 
+if not os.path.exists(CACHE_FOLDER_JSON):
+    os.makedirs(CACHE_FOLDER_JSON)
+
+if not os.path.exists(CACHE_FOLDER_HTML):
+    os.makedirs(CACHE_FOLDER_HTML)
+
 # JSON Caching
 
 def cache_json(data, date):
