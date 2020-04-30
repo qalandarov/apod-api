@@ -41,7 +41,7 @@ def _get_thumbs(data):
     return video_thumb
 
 
-def _get_apod_chars(dt, thumbs):
+def _get_apod_chars(dt):
     media_type = 'image'
     date_str = dt.strftime('%y%m%d')
     apod_url = '%sap%s.html' % (BASE, date_str)
@@ -88,9 +88,8 @@ def _get_apod_chars(dt, thumbs):
     if hd_data and hd_data != data:
         props['hdurl'] = hd_data
 
-    if thumbs and media_type == "video":
-        if thumbs.lower() == "true":
-            props['thumbnail_url'] = _get_thumbs(data)
+    if media_type == "video":
+        props['thumbnail_url'] = _get_thumbs(data)
 
     return props
 
@@ -259,7 +258,7 @@ def _explanation(soup):
     return s
 
 
-def parse_apod(dt, use_default_today_date=False, thumbs=False):
+def parse_apod(dt, use_default_today_date=False):
     """
     Accepts a date in '%Y-%m-%d' format. Returns the URL of the APOD image
     of that day, noting that
@@ -268,7 +267,7 @@ def parse_apod(dt, use_default_today_date=False, thumbs=False):
     LOG.debug('apod chars called date:' + str(dt))
 
     try:
-        return _get_apod_chars(dt, thumbs)
+        return _get_apod_chars(dt)
 
     except Exception as ex:
 
@@ -280,7 +279,7 @@ def parse_apod(dt, use_default_today_date=False, thumbs=False):
         if use_default_today_date:
             # try to get the day before
             dt = dt - timedelta(days=1)
-            return _get_apod_chars(dt, thumbs)
+            return _get_apod_chars(dt)
         else:
             # pass exception up the call stack
             LOG.error(str(ex))
