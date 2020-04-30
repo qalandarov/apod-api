@@ -220,7 +220,11 @@ def _explanation(soup):
     # Handler for later APOD entries
     LOG.debug('getting the explanation')
     s = soup.find_all('p')[2]
-    s.find('p').decompose()  # remove footer
+
+    footer = s.find('p')
+    if footer:
+        footer.decompose()
+
     s = s.text
     s = s.replace('\n', ' ')
     s = s.replace('Explanation: ', '')
