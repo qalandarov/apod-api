@@ -222,11 +222,17 @@ def _explanation(soup):
 
     footer = s.find('p')
     if footer:
-        footer.decompose()
+        if "Explanation:" in footer.text:
+            # old structure
+            s = footer
+        else:
+            footer.decompose()
 
     s = s.text
     s = s.replace('\n', ' ')
     s = s.replace('Explanation: ', '')
+    s = s.split('Tomorrow\'s picture')[0]
+    s = s.split('For more information')[0]
     s = s.strip()
     
     # recursively clean double spaces
