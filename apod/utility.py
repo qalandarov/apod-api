@@ -10,10 +10,7 @@ from bs4 import BeautifulSoup, Comment
 from datetime import timedelta
 import requests
 import logging
-import json
 import re
-import urllib3 as urllib
-# import urllib.request
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARN)
@@ -38,9 +35,8 @@ def _get_thumbs(data):
         vimeo_id_regex = re.compile("(?:/video/)(\d+)")
         vimeo_id = vimeo_id_regex.findall(data)[0]
         # make an API call to get thumbnail URL
-        with urllib.request.urlopen("https://vimeo.com/api/v2/video/" + vimeo_id + ".json") as url:
-            data = json.loads(url.read().decode())
-            video_thumb = data[0]['thumbnail_large']
+        response = requests.get(f"https://vimeo.com/api/v2/video/{vimeo_id}.json")
+        video_thumb = response.json()[0]['thumbnail_large']
 
     return video_thumb
 
