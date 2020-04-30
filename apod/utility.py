@@ -282,23 +282,3 @@ def parse_apod(dt, use_default_today_date=False, thumbs=False):
             # pass exception up the call stack
             LOG.error(str(ex))
             raise Exception(ex)
-
-
-def get_concepts(text, apikey):
-    """
-    Returns the concepts associated with the text, interleaved with integer
-    keys indicating the index.
-    """
-    cbase = 'https://api.eu-gb.natural-language-understanding.watson.cloud.ibm.com/instances/89764c40-91bb-4bcb-aa9d-98f0053b050a/v1/analyze?version=2019-07-12'
-
-    params = {"text": text, "features": { "concepts": {} } }
-
-    try:
-
-        LOG.debug('Getting response')
-        response = requests.post(cbase, auth=("apikey", apikey), json=params).json()
-        clist = [concept['text'] for concept in response['concepts']]
-        return {k: v for k, v in zip(range(len(clist)), clist)}
-
-    except Exception as ex:
-        raise ValueError(ex)

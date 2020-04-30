@@ -97,7 +97,6 @@ as parameters to a http GET request. A JSON dictionary is returned nominally.
 **Fields**
 
 - `date` A string in YYYY-MM-DD format indicating the date of the APOD image (example: 2014-11-03).  Defaults to today's date.  Must be after 1995-06-16, the first day an APOD picture was posted.  There are no images for tomorrow available through this API.
-- `concept_tags` A boolean indicating whether concept tags should be returned with the rest of the response.  The concept tags are not necessarily included in the explanation, but rather derived from common search tags that are associated with the description text.  (Better than just pure text search.)  Defaults to False.
 - `hd` A boolean parameter indicating whether or not high-resolution images should be returned. This is present for legacy purposes, it is always ignored by the service and high-resolution urls are returned regardless.
 - `count` A positive integer, no greater than 100. If this is specified then `count` randomly chosen images will be returned in a JSON array. Cannot be used in conjunction with `date` or `start_date` and `end_date`.
 - `start_date` A string in YYYY-MM-DD format indicating the start of a date range. All images in the range from `start_date` to `end_date` will be returned in a JSON array. Cannot be used with `date`.
@@ -107,20 +106,18 @@ as parameters to a http GET request. A JSON dictionary is returned nominally.
 **Returned fields**
 
 - `resource` A dictionary describing the `image_set` or `planet` that the response illustrates, completely determined by the structured endpoint.
-- `concept_tags` A boolean reflection of the supplied option.  Included in response because of default values.
 - `title` The title of the image.
 - `date` Date of image. Included in response because of default values.
 - `url` The URL of the APOD image or video of the day.
 - `hdurl` The URL for any high-resolution image for that day. Returned regardless of 'hd' param setting but will be omitted in the response IF it does not exist originally at APOD.
 - `media_type` The type of media (data) returned. May either be 'image' or 'video' depending on content.
 - `explanation` The supplied text explanation of the image.
-- `concepts` The most relevant concepts within the text explanation.  Only supplied if `concept_tags` is set to True.
 - `thumbnail_url` The URL of thumbnail of the video. 
 
 **Example**
 
 ```bash
-localhost:5000/v1/apod?date=2014-10-01&concept_tags=True
+localhost:5000/v1/apod?date=2014-10-01
 ```
 <details><summary>See Return Object</summary>
 <p>
@@ -130,7 +127,6 @@ localhost:5000/v1/apod?date=2014-10-01&concept_tags=True
     resource: {
         image_set: "apod"
     },
-    concept_tags: "True",
     date: "2013-10-01", 
     title: "Filaments of the Vela Supernova Remnant",
     url: "http://apod.nasa.gov/apod/image/1310/velafilaments_jadescope_960.jpg",
@@ -144,17 +140,7 @@ localhost:5000/v1/apod?date=2014-10-01&concept_tags=True
     detonated star, it decays and reacts with the interstellar medium, producing light
     in many different colors and energy bands. Remaining at the center of the Vela
     Supernova Remnant is a pulsar, a star as dense as nuclear matter that rotates
-    completely around more than ten times in a single second.",
-    concepts: {
-        0: "Astronomy",
-        1: "Star",
-        2: "Sun",
-        3: "Milky Way",
-        4: "Hubble Space Telescope",
-        5: "Earth",
-        6: "Nebula",
-        7: "Interstellar medium"
-    }
+    completely around more than ten times in a single second."
 }
 ```
 

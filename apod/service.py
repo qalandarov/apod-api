@@ -20,7 +20,7 @@ from datetime import datetime, date
 from random import sample
 from flask import request, jsonify, render_template, Flask
 from flask_cors import CORS
-from utility import parse_apod, get_concepts
+from utility import parse_apod
 import logging
 
 app = Flask(__name__)
@@ -33,18 +33,10 @@ logging.basicConfig(level=logging.DEBUG)
 # assorted libraries
 SERVICE_VERSION = 'v1'
 APOD_METHOD_NAME = 'apod'
-ALLOWED_APOD_FIELDS = ['concept_tags', 'date', 'hd', 'count', 'start_date', 'end_date', 'thumbs']
-ALCHEMY_API_KEY = None
+ALLOWED_APOD_FIELDS = ['date', 'hd', 'count', 'start_date', 'end_date', 'thumbs']
 
 FOLDER_NAME = "data"
 MISSING_DATES = []
-
-try:
-    with open('alchemy_api.key', 'r') as f:
-        ALCHEMY_API_KEY = f.read()
-#except FileNotFoundError:
-except IOError:
-     LOG.info('WARNING: NO alchemy_api.key found, concept_tagging is NOT supported')
 
 
 def _abort(code, msg, usage=True):
@@ -84,7 +76,7 @@ def _validate_date(dt):
         raise ValueError('Date must be between %s and %s.' % (begin_str, today_str))
 
 
-def _apod_handler(dt, use_concept_tags=False, use_default_today_date=False, thumbs=False):
+def _apod_handler(dt, use_default_today_date=False, thumbs=False):
     """
     Accepts a parameter dictionary. Returns the response object to be
     served through the API.
@@ -92,13 +84,6 @@ def _apod_handler(dt, use_concept_tags=False, use_default_today_date=False, thum
     try:
         page_props = parse_apod(dt, use_default_today_date, thumbs)
         LOG.debug('managed to get apod page characteristics')
-
-        if use_concept_tags:
-            if ALCHEMY_API_KEY is None:
-                page_props['concepts'] = 'concept_tags functionality turned off in current service'
-            else:
-                page_props['concepts'] = get_concepts(page_props['explanation'], ALCHEMY_API_KEY)
-
         return page_props
 
     except Exception as e:
@@ -108,12 +93,11 @@ def _apod_handler(dt, use_concept_tags=False, use_default_today_date=False, thum
         return _abort(500, 'Internal Service Error', usage=False)
 
 
-def _get_json_for_date(input_date, use_concept_tags, thumbs):
+def _get_json_for_date(input_date, thumbs):
     """
     This returns the JSON data for a specific date, which must be a string of the form YYYY-MM-DD. If date is None,
     then it defaults to the current date.
     :param input_date:
-    :param use_concept_tags:
     :return:
     """
 
@@ -129,20 +113,19 @@ def _get_json_for_date(input_date, use_concept_tags, thumbs):
     _validate_date(dt)
 
     # get data
-    data = _apod_handler(dt, use_concept_tags, use_default_today_date, thumbs)
+    data = _apod_handler(dt, use_default_today_date, thumbs)
     data['service_version'] = SERVICE_VERSION
 
     # return info as JSON
     return jsonify(data)
 
 
-def _get_json_for_date_range(start_date, end_date, use_concept_tags, thumbs):
+def _get_json_for_date_range(start_date, end_date, thumbs):
     """
     This returns the JSON data for a range of dates, specified by start_date and end_date, which must be strings of the
     form YYYY-MM-DD. If end_date is None then it defaults to the current date.
     :param start_date:
     :param end_date:
-    :param use_concept_tags:
     :return:
     """
     # validate input date
@@ -170,7 +153,7 @@ def _get_json_for_date_range(start_date, end_date, use_concept_tags, thumbs):
     while start_ordinal <= end_ordinal:
         # get data
         dt = date.fromordinal(start_ordinal)
-        touple = (dt, use_concept_tags, start_ordinal == today_ordinal, thumbs)
+        touple = (dt, start_ordinal == today_ordinal, thumbs)
         all_data.append(touple)
         start_ordinal += 1
 
@@ -186,15 +169,15 @@ def _get_json_for_date_range(start_date, end_date, use_concept_tags, thumbs):
 
 
 def threaded_download(touple):
-    # touple = (dt, use_concept_tags, start_ordinal == today_ordinal, thumbs)
-    # _apod_handler(dt, use_concept_tags=False, use_default_today_date=False, thumbs=False)
+    # touple = (dt, start_ordinal == today_ordinal, thumbs)
+    # _apod_handler(dt, use_default_today_date=False, thumbs=False)
     requested_date = touple[0]
     
     if os.path.exists(f"{FOLDER_NAME}/{requested_date}.json"):
         return
     
     try:
-        data = _apod_handler(requested_date, touple[1], touple[2], touple[3])
+        data = _apod_handler(requested_date, touple[1], touple[2])
         dump(data, requested_date)
     except:
         MISSING_DATES.append(requested_date)
@@ -235,17 +218,13 @@ def apod():
         count = args.get('count')
         start_date = args.get('start_date')
         end_date = args.get('end_date')
-        use_concept_tags = args.get('concept_tags', False)
         thumbs = args.get('thumbs', False)
 
         if not count and not start_date and not end_date:
-            return _get_json_for_date(input_date, use_concept_tags, thumbs)
-
-        elif not input_date and not start_date and not end_date and count:
-            return _get_json_for_random_dates(int(count), use_concept_tags, thumbs)
+            return _get_json_for_date(input_date, thumbs)
 
         elif not count and not input_date and start_date:
-            return _get_json_for_date_range(start_date, end_date, use_concept_tags, thumbs)
+            return _get_json_for_date_range(start_date, end_date, thumbs)
 
         else:
             return _abort(400, 'Bad Request: invalid field combination passed.')
