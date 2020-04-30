@@ -34,8 +34,6 @@ SERVICE_VERSION = 'v2'
 APOD_METHOD_NAME = 'apod'
 ALLOWED_APOD_FIELDS = ['date', 'start_date', 'end_date']
 
-CACHE_FOLDER = "cache"
-MISSING_DATES = []
 
 
 def _abort(code, msg, usage=True):
@@ -162,37 +160,27 @@ def _get_json_for_date_range(start_date, end_date):
 
 
     pool = Pool(min(100, len(all_data)))  # max 100 threads
-    pool.map(threaded_download, all_data)
+    apods = pool.map(threaded_download, all_data)
     pool.close()
     pool.join()
 
-    # Sorting, assigning to a custom var, then emptying the global var
-    # to prevent duplications between sessions
-    MISSING_DATES.sort()
-    missing = MISSING_DATES.copy()
-    MISSING_DATES.clear()
-
-    return {
-        "processed": {"from": start_date, "to": end_date},
-        "missing_dates": missing
-    }
+    apods = [apod for apod in apods if apod]  # remove None's
+    return jsonify(apods)
 
 
 def threaded_download(touple):
-    # touple = (dt, start_ordinal == today_ordinal)
-    # _apod_handler(dt, use_default_today_date=False)
     requested_date = touple[0]
-    
-    if cached_json_exists_for(requested_date):
-        return
+    use_default_today_date = touple[1]
     
     try:
-        data = _apod_handler(requested_date, touple[1])
-        cache_json(data, requested_date)
-    except:
-        date_str = datetime.strftime(requested_date, '%Y-%m-%d')
-        MISSING_DATES.append(date_str)
-        pass
+        return cached_json_for(requested_date)
+    except:    
+        try:
+            data = _apod_handler(requested_date, use_default_today_date)
+            cache_json(data, requested_date)
+            return data
+        except:
+            return None
 
 #
 # Endpoints
