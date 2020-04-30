@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # this should reflect both this service and the backing 
 # assorted libraries
-SERVICE_VERSION = 'v1'
+SERVICE_VERSION = 'v2'
 APOD_METHOD_NAME = 'apod'
 ALLOWED_APOD_FIELDS = ['date', 'start_date', 'end_date']
 
