@@ -114,7 +114,11 @@ def _get_json_for_date(input_date):
     _validate_date(dt)
 
     # get data
-    data = _apod_handler(dt, use_default_today_date)
+    try:
+        data = cached_data_for(dt)
+    except:
+        data = _apod_handler(dt, use_default_today_date)
+
     data['service_version'] = SERVICE_VERSION
 
     # return info as JSON
@@ -193,6 +197,12 @@ def dump(data, date):
         os.makedirs(CACHE_FOLDER)
     with open(f"{CACHE_FOLDER}/{date}.json", "w") as file:
         json.dump(data, file, indent=2)
+
+
+def cached_data_for(date):
+    with open(f"{CACHE_FOLDER}/{date}.json") as file:
+        data = json.load(file)
+    return data
 
 #
 # Endpoints
