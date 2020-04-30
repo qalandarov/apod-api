@@ -168,10 +168,15 @@ def _get_json_for_date_range(start_date, end_date):
     pool.close()
     pool.join()
 
-    # return info as JSON
+    # Sorting, assigning to a custom var, then emptying the global var
+    # to prevent duplications between sessions
+    MISSING_DATES.sort()
+    missing = MISSING_DATES.copy()
+    MISSING_DATES.clear()
+
     return {
         "processed": {"from": start_date, "to": end_date},
-        "missing_dates": MISSING_DATES
+        "missing_dates": missing
     }
 
 
