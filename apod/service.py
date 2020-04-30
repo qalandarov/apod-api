@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.DEBUG)
 # assorted libraries
 SERVICE_VERSION = 'v1'
 APOD_METHOD_NAME = 'apod'
-ALLOWED_APOD_FIELDS = ['date', 'hd', 'count', 'start_date', 'end_date', 'thumbs']
+ALLOWED_APOD_FIELDS = ['date', 'hd', 'start_date', 'end_date', 'thumbs']
 
 CACHE_FOLDER = "cache"
 MISSING_DATES = []
@@ -216,15 +216,14 @@ def apod():
 
         #
         input_date = args.get('date')
-        count = args.get('count')
         start_date = args.get('start_date')
         end_date = args.get('end_date')
         thumbs = args.get('thumbs', False)
 
-        if not count and not start_date and not end_date:
+        if not start_date and not end_date:
             return _get_json_for_date(input_date, thumbs)
 
-        elif not count and not input_date and start_date:
+        elif not input_date and start_date:
             return _get_json_for_date_range(start_date, end_date, thumbs)
 
         else:
