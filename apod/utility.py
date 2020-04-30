@@ -85,7 +85,9 @@ def _get_apod_chars(dt):
     except:
         apod_url = os.path.join(BASE, _html_filename_for(dt))
         LOG.debug('OPENING URL:' + apod_url)
-        html_content = requests.get(apod_url).text
+        response = requests.get(apod_url)
+        response.raise_for_status()
+        html_content = response.text
         _cache_html(html_content, dt)
 
     soup = BeautifulSoup(html_content, 'html.parser')
