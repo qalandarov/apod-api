@@ -4,6 +4,7 @@
 .coverage
 env/ 
 venv/
+cache/
 # don't include third-party dependencies.
 lib/
 !lib/README.md

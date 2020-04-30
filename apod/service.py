@@ -36,7 +36,7 @@ SERVICE_VERSION = 'v1'
 APOD_METHOD_NAME = 'apod'
 ALLOWED_APOD_FIELDS = ['date', 'hd', 'count', 'start_date', 'end_date', 'thumbs']
 
-FOLDER_NAME = "data"
+CACHE_FOLDER = "cache"
 MISSING_DATES = []
 
 
@@ -174,7 +174,7 @@ def threaded_download(touple):
     # _apod_handler(dt, use_default_today_date=False, thumbs=False)
     requested_date = touple[0]
     
-    if os.path.exists(f"{FOLDER_NAME}/{requested_date}.json"):
+    if os.path.exists(f"{CACHE_FOLDER}/{requested_date}.json"):
         return
     
     try:
@@ -186,9 +186,9 @@ def threaded_download(touple):
 
 
 def dump(data, date):
-    if not os.path.exists(FOLDER_NAME):
-        os.makedirs(FOLDER_NAME)
-    with open(f"{FOLDER_NAME}/{date}.json", "w") as file:
+    if not os.path.exists(CACHE_FOLDER):
+        os.makedirs(CACHE_FOLDER)
+    with open(f"{CACHE_FOLDER}/{date}.json", "w") as file:
         json.dump(data, file, indent=2)
 
 #
