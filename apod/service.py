@@ -19,11 +19,13 @@ from multiprocessing.dummy import Pool
 from datetime import datetime, date
 from flask import request, jsonify, render_template, Flask
 from flask_cors import CORS
+from flask_gzip import Gzip
 from utility import parse_apod
 import logging
 
 app = Flask(__name__)
 CORS(app)
+gzip = Gzip(app)
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
