@@ -82,6 +82,12 @@ def _youtube_video_id_from(url):
     video_id = re.compile(regex).findall(url)  # returns an array
     return ''.join(video_id)  # get id or empty string
 
+
+def _query(url):
+    query = requests.utils.urlparse(url).query
+    return "?" + query if query else ""
+
+
 def _get_apod_chars(dt):
     media_type = 'image'
 
