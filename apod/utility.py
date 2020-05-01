@@ -63,25 +63,24 @@ def _html_filename_for(date):
 
 # function for getting video thumbnails
 def _get_thumbs(data):
-    video_thumb = ""
+    if _youtube_video_id_from(data):
+        return "https://img.youtube.com/vi/" + _youtube_video_id_from(data) + "/0.jpg"
 
-    if "youtube" in data or "youtu.be" in data:
-        # get ID from YouTube URL
-        youtube_id_regex = re.compile("(?:(?<=(v|V)/)|(?<=be/)|(?<=(\?|\&)v=)|(?<=embed/))([\w-]+)")
-        video_id = youtube_id_regex.findall(data)
-        video_id = ''.join(''.join(elements) for elements in video_id).replace("?", "").replace("&", "")
-        # get URL of thumbnail
-        video_thumb = "https://img.youtube.com/vi/" + video_id + "/0.jpg"
     elif "vimeo" in data:
         # get ID from Vimeo URL
         vimeo_id_regex = re.compile("(?:/video/)(\d+)")
         vimeo_id = vimeo_id_regex.findall(data)[0]
         # make an API call to get thumbnail URL
         response = requests.get(f"https://vimeo.com/api/v2/video/{vimeo_id}.json")
-        video_thumb = response.json()[0]['thumbnail_large']
+        return response.json()[0]['thumbnail_large']
 
-    return video_thumb
 
+def _youtube_video_id_from(url):
+    if not url:
+        return None
+    regex = "(?:http:|https:)*?\/\/(?:www\.|)(?:youtube\.com|m\.youtube\.com|youtu\.|youtube-nocookie\.com).*(?:v=|v%3D|v\/|(?:a|p)\/(?:a|u)\/\d.*\/|watch\?|vi(?:=|\/)|\/embed\/|oembed\?|be\/|e\/)([^&?%#\/\n]*)"
+    video_id = re.compile(regex).findall(url)  # returns an array
+    return ''.join(video_id)  # get id or empty string
 
 def _get_apod_chars(dt):
     media_type = 'image'
