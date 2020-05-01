@@ -89,8 +89,6 @@ def _query(url):
 
 
 def _get_apod_chars(dt):
-    media_type = 'image'
-
     try:
         html_content = _cached_html_for(dt)
     except:
@@ -103,9 +101,11 @@ def _get_apod_chars(dt):
 
     soup = BeautifulSoup(html_content, 'html.parser')
     LOG.debug('getting the data url')
+    data = None
     hd_data = None
+
     if soup.img:
-        # it is an image, so get both the low- and high-resolution data
+        media_type = 'image'
         data = BASE + soup.img['src']
 
         LOG.debug('getting the link for hd_data')
@@ -113,14 +113,20 @@ def _get_apod_chars(dt):
             if link['href'] and link['href'].startswith('image'):
                 hd_data = BASE + link['href']
                 break
-    elif soup.iframe:
-        # its a video
-        media_type = 'video'
-        data = soup.iframe['src']
     else:
-        # it is neither image nor video, output empty urls
-        media_type = 'other'
-        data = ''
+        media_type = 'video'
+        if soup.iframe:
+            data = soup.iframe['src']
+        elif soup.object and _youtube_video_id_from(soup.object.embed["src"]):
+            # old way of embedding videos
+            url = soup.object.embed["src"]
+            # generating new URL because the old url structure is not recognized by youtube anymore
+            # and query params could contain start position
+            data = "https://youtu.be/" + _youtube_video_id_from(url) + _query(url)
+
+    if not data:
+        # Ignore the entry if we can't get neither an image nor a video url (flash/unsupported video)
+        raise ValueError("Neither image nor video is available for this date")
 
     props = {}
 
@@ -137,8 +143,7 @@ def _get_apod_chars(dt):
     if keywords:
         props['keywords'] = keywords
     
-    if data:
-        props['url'] = data
+    props['url'] = data
 
     if hd_data and hd_data != data:
         props['hdurl'] = hd_data
